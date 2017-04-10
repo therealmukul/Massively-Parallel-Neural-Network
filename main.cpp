@@ -1,7 +1,10 @@
 #include <iostream>
 #include <vector>
+#include <string>
 #include <mpi.h>
+
 #include "Neuron.cpp"
+#include "Layer.cpp"
 
 using namespace std;
 
@@ -16,13 +19,13 @@ int main(int argc, char *argv[]) {
    MPI_Comm_size( MPI_COMM_WORLD, &worldSize);
    MPI_Comm_rank( MPI_COMM_WORLD, &myRank);
 
-   Neuron *testNeuron = new Neuron(4, 1);
-   vector<Connection> outputWeights = testNeuron->getOutputWeights();
-
-   for (int i = 0; i < outputWeights.size(); i++) {
-      cout << outputWeights[i].weight << endl;
+   Layer l1 = Layer(3, 5, "input");
+   cout << l1.getType() << endl;
+   vector<Neuron> l1Neurons = l1.getNeurons();
+   for (auto neuron : l1Neurons) {
+      cout << neuron.getIndex() << endl;
    }
-   
+
    MPI_Finalize();
    return 0;
 
