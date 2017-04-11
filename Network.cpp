@@ -35,7 +35,7 @@ void Network::addLayer(string _type, int _size) {
 }
 
 /*
-   Once all layers have been added construct the topology of the network,
+   Once all layers have been added to construct the topology of the network,
    this function should be called to actaully build/initialize the network.
 */
 void Network::initializeNetwork() {

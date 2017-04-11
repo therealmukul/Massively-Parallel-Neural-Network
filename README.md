@@ -2,4 +2,12 @@
 
 ### --Under Development--
 
+- [X] Network Initialization
+- [ ] Write input reading/generation script
+- [ ] Implement Forward Propogation
+- [ ] Implement Backward Propogation
+- [ ] Parallelize Network
+- [ ] Perform Strong Scaling Tests
+
+
 ![alt text](nnmeme.jpg)
