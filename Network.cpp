@@ -24,7 +24,9 @@ Network::Network() {
    // Not sure what will need to be added here. Nothing for now.
 }
 
-
+/*
+   Add layers to define the topology of the network
+*/
 void Network::addLayer(string _type, int _size) {
    LayerTopology lyrTop = LayerTopology();
    lyrTop.size = _size;
@@ -32,7 +34,10 @@ void Network::addLayer(string _type, int _size) {
    networkTopology.push_back(lyrTop);
 }
 
-
+/*
+   Once all layers have been added construct the topology of the network,
+   this function should be called to actaully build/initialize the network.
+*/
 void Network::initializeNetwork() {
    for (int currentLayer = 0; currentLayer < networkTopology.size(); currentLayer++) {
       int layerSize = networkTopology[currentLayer].size;

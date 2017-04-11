@@ -1,9 +1,0 @@
-{
-   "files.associations": {
-      "cmath": "cpp",
-      "cstdio": "cpp",
-      "cstdlib": "cpp",
-      "cwchar": "cpp",
-      "exception": "cpp"
-   }
-}
