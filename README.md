@@ -6,7 +6,7 @@
 - [ ] Write input reading/generation script
 - [ ] Implement Forward Propogation
 - [ ] Implement Backward Propogation
-- [ ] Parallelize Network
+- [ ] Parallelize Network Architecture
 - [ ] Perform Strong Scaling Tests
 
 
