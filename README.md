@@ -3,7 +3,7 @@
 ### --Under Development--
 
 - [X] Network Initialization
-- [ ] Write input reading/generation script
+- [ ] Input data preprocessing
 - [ ] Implement Forward Propogation
 - [ ] Implement Backward Propogation
 - [ ] Parallelize Network Architecture
