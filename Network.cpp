@@ -56,14 +56,13 @@ void Network::initializeNetwork() {
 }
 
 void Network::printNetworkInfo() {
-   int totalWeights = 1;
+   cout << "----------------------" << endl;
    for (int i = 0; i < layers.size(); i++) {
       string layerType = layers[i].getType();
       int layerSize = layers[i].getSize();
       printf("Type: %s Size: %d\n", layerType.c_str(), layerSize);
-      totalWeights *= layerSize;
    }
-   cout << totalWeights << endl;
+   cout << "----------------------" << endl;
 }
 
 

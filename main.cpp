@@ -25,8 +25,8 @@ int main(int argc, char *argv[]) {
    Network net = Network();
 
    net.addLayer("input", 3);  // 3 input neurons
-   net.addLayer("hidden", 9); // 9 hidden neurons
-   net.addLayer("output", 6); // 6 output neurons
+   net.addLayer("hidden", 9/worldSize); // 9 hidden neurons
+   net.addLayer("output", 6/worldSize); // 6 output neurons
 
    net.initializeNetwork();
 
