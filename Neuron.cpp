@@ -1,4 +1,7 @@
-// Class to represent a Neuron on the Neural Network
+/*
+   Class to represent a Neuron on the Neural Network
+*/
+
 using namespace std;
 
 struct Connection {

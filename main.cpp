@@ -1,10 +1,12 @@
 #include <iostream>
+#include <cstdlib>
 #include <vector>
 #include <string>
 #include <mpi.h>
 
 #include "Neuron.cpp"
 #include "Layer.cpp"
+#include "Network.cpp"
 
 using namespace std;
 
@@ -19,12 +21,16 @@ int main(int argc, char *argv[]) {
    MPI_Comm_size( MPI_COMM_WORLD, &worldSize);
    MPI_Comm_rank( MPI_COMM_WORLD, &myRank);
 
-   Layer l1 = Layer(3, 5, "input");
-   cout << l1.getType() << endl;
-   vector<Neuron> l1Neurons = l1.getNeurons();
-   for (auto neuron : l1Neurons) {
-      cout << neuron.getIndex() << endl;
-   }
+   // Construct a NN with 1 input layer, 1 hidden layer, and 1 output layer
+   Network net = Network();
+
+   net.addLayer("input", 3);  // 3 input neurons
+   net.addLayer("hidden", 9); // 9 hidden neurons
+   net.addLayer("output", 6); // 6 output neurons
+
+   net.initializeNetwork();
+
+   net.printNetworkInfo();
 
    MPI_Finalize();
    return 0;

@@ -1,16 +1,21 @@
-// Class to represent a Layer in the Neural Network
+/*
+   Class to represent a Layer in the Neural Network
+*/
+
 using namespace std;
 
 class Layer {
 private:
+   int index;
    int size;
    string type;
    vector<Neuron> neurons;
    Neuron *ghostNeuronTop;
    Neuron *ghostNeuronBottom;
 public:
-   Layer(int _size, int numNeuronsInNextLayer, string _type);
+   Layer(int _size, int numNeuronsInNextLayer, string _type, int _index);
    string getType();
+   int getSize();
    vector<Neuron> getNeurons();
 };
 
@@ -26,13 +31,27 @@ public:
       An identifier for the type of layer (input, hidden, output)
    Return: Layer object
 */
-Layer::Layer(int _size, int numNeuronsInNextLayer, string _type) {
+Layer::Layer(int _size, int numNeuronsInNextLayer, string _type, int _index) {
    size = _size;
    type = _type;
+   index = _index;
       
    for (int neuronIndex = 0; neuronIndex < size; neuronIndex++) {
-      Neuron neuron = Neuron(numNeuronsInNextLayer, (neuronIndex + 1));
-      neurons.push_back(neuron);
+      if (type == "output") {
+         // Output neurons have no outgoing connections
+         Neuron neuron = Neuron(0, (neuronIndex + 1));
+         neurons.push_back(neuron);
+      } else {
+         Neuron neuron = Neuron(numNeuronsInNextLayer, (neuronIndex + 1));
+         neurons.push_back(neuron);
+      }
+      
+   }
+
+   if (type == "output") {
+      // Ghost neurons in the output layer will have no outgoing connections
+      ghostNeuronTop = new Neuron(0, 0);
+      ghostNeuronTop = new Neuron(0, 0);   
    }
    ghostNeuronTop = new Neuron(numNeuronsInNextLayer, 0);
    ghostNeuronTop = new Neuron(numNeuronsInNextLayer, 0);
@@ -40,6 +59,10 @@ Layer::Layer(int _size, int numNeuronsInNextLayer, string _type) {
 
 string Layer::getType() {
    return type;
+}
+
+int Layer::getSize() {
+   return size;
 }
 
 vector<Neuron> Layer::getNeurons() {
