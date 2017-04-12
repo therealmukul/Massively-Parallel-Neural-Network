@@ -3,7 +3,7 @@
 ### --Under Development--
 
 - [X] Network Initialization
-- [ ] Input data preprocessing
+- [X] Input data preprocessing
 - [ ] Implement Forward Propogation
 - [ ] Implement Backward Propogation
 - [ ] Parallelize Network Architecture
