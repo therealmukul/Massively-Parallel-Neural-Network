@@ -13,7 +13,7 @@ private:
    Neuron *ghostNeuronTop;
    Neuron *ghostNeuronBottom;
 public:
-   Layer(int _size, int numNeuronsInNextLayer, string _type, int _index);
+   Layer(const int &_size, const int &numNeuronsInNextLayer, const string &_type, const int &_index);
    string getType();
    int getSize();
    vector<Neuron> getNeurons();
@@ -31,7 +31,7 @@ public:
       An identifier for the type of layer (input, hidden, output)
    Return: Layer object
 */
-Layer::Layer(int _size, int numNeuronsInNextLayer, string _type, int _index) {
+Layer::Layer(const int &_size, const int &numNeuronsInNextLayer, const string &_type, const int &_index) {
    size = _size;
    type = _type;
    index = _index;

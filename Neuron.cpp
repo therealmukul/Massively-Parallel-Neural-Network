@@ -11,6 +11,7 @@ struct Connection {
 class Neuron {
 private:
    int index;
+   double outputValue;
    double output;
    bool isGhost;
    vector<Connection> outputWeights;

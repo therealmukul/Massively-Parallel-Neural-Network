@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <vector>
 #include <string>
@@ -14,7 +15,6 @@ using namespace std;
 int worldSize;
 int myRank;
 
-
 int main(int argc, char *argv[]) {
 
    MPI_Init(&argc, &argv);
@@ -23,12 +23,14 @@ int main(int argc, char *argv[]) {
 
    // Construct a NN with 1 input layer, 1 hidden layer, and 1 output layer
    Network net = Network();
-
    net.addLayer("input", 3);  // 3 input neurons
-   net.addLayer("hidden", 9/worldSize); // 9 hidden neurons
-   net.addLayer("output", 6/worldSize); // 6 output neurons
-
+   net.addLayer("hidden", 12/worldSize); // 12 hidden neurons
+   net.addLayer("output", 4/worldSize); // 4 output neurons
    net.initializeNetwork();
+   
+
+   net.loadTestingInputData("testInput.txt");
+   net.loadTestingOutputData("testLabels.txt", 4);
 
    net.printNetworkInfo();
 
