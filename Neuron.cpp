@@ -11,25 +11,27 @@ struct Connection {
 class Neuron {
 private:
    int index;
-   double outputValue;
    double output;
    bool isGhost;
    vector<Connection> outputWeights;
 public:
    Neuron(int numOutputs, int _index);
-   void setOuput(double value);
+   void setOutput(double value);
    double getOutput();
-   vector<Connection> getOutputWeights();
    int getIndex();
+   vector<Connection> getOutputWeights();
+   void feedForward(vector<Neuron> &prevLayerNeurons);
 };
 
 /*
    Construct a single Neuron object
+
    Input: numOutputs
       Is the number of outgoing connections a neuron has.
       Will be the number of neurons in the next layer.
    Input: _index
       Integer value used to identify the neuron in the layer it belongs to.
+
    Return: Neuron object
 */
 Neuron::Neuron(int numOutputs, int _index) {
@@ -37,8 +39,9 @@ Neuron::Neuron(int numOutputs, int _index) {
       Connection c = Connection();
       c.weight = 0.1; // Change this to be a random value
       outputWeights.push_back(c);
+      output = 0.0;
    }
-   if (index == 0) {
+   if (index == -1) {
       isGhost = true;
    } else {
        isGhost = false;
@@ -46,7 +49,7 @@ Neuron::Neuron(int numOutputs, int _index) {
    index = _index;
 }
 
-void Neuron::setOuput(double value) {
+void Neuron::setOutput(double value) {
    output = value;
 }
 
@@ -66,3 +69,22 @@ vector<Connection> Neuron::getOutputWeights() {
 int Neuron::getIndex() {
    return index;
 }
+
+void Neuron::feedForward(vector<Neuron> &prevLayerNeurons) {
+   double sum = 0.0;
+   for (int i = 0; i < prevLayerNeurons.size(); i++) {
+      sum += prevLayerNeurons[i].getOutput() * 
+             prevLayerNeurons[i].getOutputWeights()[index].weight;
+   }
+   output = sum;
+   cout << "   Neuron: " << index << " Output: " << sum << endl;
+}
+
+
+
+
+
+
+
+
+

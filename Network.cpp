@@ -11,21 +11,24 @@ struct LayerTopology {
 
 class Network {
 private:
+   int sampleIndex;
    vector<Layer> layers;
    vector<LayerTopology> networkTopology;
-   vector<vector<float> > inputData;
-   vector<vector<float> > outputData;
+   vector<vector<double> > inputData;
+   vector<vector<double> > outputData;
 public:
    Network();
    void addLayer(const string &_type, const int &_size);
    void initializeNetwork();
    void loadTestingInputData(const string &inputDataLoc);
    void loadTestingOutputData(const string &outputDataLoc, const int &numClasses);
+   void forwardPropogation();
+
    void printNetworkInfo();  // For debugging purposes
 };
 
 Network::Network() {
-   // Not sure what will need to be added here. Nothing for now.
+   sampleIndex = 0;
 }
 
 /*
@@ -78,14 +81,14 @@ void Network::loadTestingInputData(const string &inputDataLoc) {
 
    ifstream infile(inputDataLoc);
    string line;
-   vector<float> sample;
+   vector<double> sample;
    int inputSize = networkTopology[0].size;
 
    while (getline(infile, line)) {
       for (int c = 0; c < line.size(); c++) {
          char dataPoint = line[c];
          if (dataPoint != ',') {
-            sample.push_back(((float)dataPoint - 48.0));
+            sample.push_back(((double)dataPoint - 48.0));
          }
       }
       inputData.push_back(sample);
@@ -118,7 +121,7 @@ void Network::loadTestingInputData(const string &inputDataLoc) {
 void Network::loadTestingOutputData(const string &outputDataLoc, const int &numClasses) {
    ifstream infile(outputDataLoc);
    string c;
-   vector<float> onehot(numClasses, 0.0);
+   vector<double> onehot(numClasses, 0.0);
 
    while (getline(infile, c)) {
       int dataPoint = stoi(c);
@@ -136,6 +139,29 @@ void Network::loadTestingOutputData(const string &outputDataLoc, const int &numC
    //    cout << endl;
    // }
 }
+
+void Network::forwardPropogation() {
+
+   // Select a sample from the input data
+   int index = sampleIndex % inputData.size();
+   vector<double> inputSample = inputData[index];
+
+   // Feed the sample input values into the neurons in the input layer
+   int inputLayerIndex = 0;
+   for (int value = 0; value < inputSample.size(); value++) {
+      layers[inputLayerIndex].setOutputValueForNeuronAtIndex(value, inputSample[value]);
+   }
+
+   // Forward Propogate
+   for (int layerNum = 1; layerNum < layers.size(); layerNum++) {
+      cout << layers[layerNum].getType() << endl;
+      Layer prevLayer = layers[layerNum - 1];
+      layers[layerNum].feedForward(prevLayer);
+   }
+
+   sampleIndex++;
+}
+
 
 void Network::printNetworkInfo() { 
    cout << "----------------------" << endl;

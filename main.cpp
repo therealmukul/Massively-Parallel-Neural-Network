@@ -34,6 +34,13 @@ int main(int argc, char *argv[]) {
 
    net.printNetworkInfo();
 
+
+   int iterations = 2;
+   // Perform forward propogation for the specified number of iterations
+   for (int i = 0; i < iterations; i++) {
+      net.forwardPropogation();
+   }
+
    MPI_Finalize();
    return 0;
 
