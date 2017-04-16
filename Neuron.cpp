@@ -35,11 +35,12 @@ public:
    Return: Neuron object
 */
 Neuron::Neuron(int numOutputs, int _index) {
+   output = 0.0;
    for (int connection = 0; connection < numOutputs; connection++) {
       Connection c = Connection();
       c.weight = 0.1; // Change this to be a random value
       outputWeights.push_back(c);
-      output = 0.0;
+      
    }
    if (index == -1) {
       isGhost = true;

@@ -48,7 +48,7 @@ void Network::addLayer(const string &_type, const int &_size) {
 void Network::initializeNetwork() {
    for (int currentLayer = 0; currentLayer < networkTopology.size(); currentLayer++) {
       int layerSize = networkTopology[currentLayer].size;
-      int layerIndex = currentLayer + 1; // Starting numbering from "1"
+      int layerIndex = currentLayer;
       string layerType = networkTopology[currentLayer].type;
       
       if (currentLayer <= networkTopology.size() - 1) {
@@ -154,9 +154,10 @@ void Network::forwardPropogation() {
 
    // Forward Propogate
    for (int layerNum = 1; layerNum < layers.size(); layerNum++) {
-      cout << layers[layerNum].getType() << " Rank " << myRank << endl;
+      // cout << layers[layerNum].getType() << " Rank " << myRank << endl;
       Layer prevLayer = layers[layerNum - 1];
       layers[layerNum].feedForward(prevLayer);
+      MPI_Barrier(MPI_COMM_WORLD);
    }
 
    sampleIndex++;
@@ -165,10 +166,12 @@ void Network::forwardPropogation() {
 
 void Network::printNetworkInfo() { 
    cout << "----------------------" << endl;
+   cout << "Num Rank: " << worldSize << endl;
+   cout << "Each ranks handles:" << endl;
    for (int i = 0; i < layers.size(); i++) {
       string layerType = layers[i].getType();
       int layerSize = layers[i].getSize();
-      printf("Type: %s Size: %d\n", layerType.c_str(), layerSize);
+      printf("  Type: %s Size: %d\n", layerType.c_str(), layerSize);
    }
    cout << "----------------------" << endl;
 }
