@@ -79,7 +79,7 @@ void Network::initializeNetwork() {
 */
 void Network::loadTestingInputData(const string &inputDataLoc) {
 
-   ifstream infile(inputDataLoc);
+   ifstream infile(inputDataLoc.c_str());
    string line;
    vector<double> sample;
    int inputSize = networkTopology[0].size;
@@ -119,12 +119,12 @@ void Network::loadTestingInputData(const string &inputDataLoc) {
          forward propgation.  
 */
 void Network::loadTestingOutputData(const string &outputDataLoc, const int &numClasses) {
-   ifstream infile(outputDataLoc);
+   ifstream infile(outputDataLoc.c_str());
    string c;
    vector<double> onehot(numClasses, 0.0);
 
    while (getline(infile, c)) {
-      int dataPoint = stoi(c);
+      int dataPoint = atoi(c.c_str());
       onehot[dataPoint - 1] = 1.0;
       outputData.push_back(onehot);
       onehot[dataPoint - 1] = 0.0;
@@ -154,7 +154,7 @@ void Network::forwardPropogation() {
 
    // Forward Propogate
    for (int layerNum = 1; layerNum < layers.size(); layerNum++) {
-      cout << layers[layerNum].getType() << endl;
+      cout << layers[layerNum].getType() << " Rank " << myRank << endl;
       Layer prevLayer = layers[layerNum - 1];
       layers[layerNum].feedForward(prevLayer);
    }

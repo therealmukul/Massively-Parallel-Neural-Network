@@ -77,7 +77,9 @@ void Neuron::feedForward(vector<Neuron> &prevLayerNeurons) {
              prevLayerNeurons[i].getOutputWeights()[index].weight;
    }
    output = sum;
-   cout << "   Neuron: " << index << " Output: " << sum << endl;
+   // cout << "   Neuron: " << index << " Output: " << sum << endl;
+
+   
 }
 
 
