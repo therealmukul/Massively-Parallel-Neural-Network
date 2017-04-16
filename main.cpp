@@ -24,8 +24,8 @@ int main(int argc, char *argv[]) {
    // Construct a NN with 1 input layer, 1 hidden layer, and 1 output layer
    Network net = Network();
    net.addLayer("input", 3);  // 3 input neurons
-   net.addLayer("hidden", 9/worldSize); // 12 hidden neurons
-   net.addLayer("output", 6/worldSize); // 4 output neurons
+   net.addLayer("hidden", 10/worldSize); // 12 hidden neurons
+   net.addLayer("output", 2/worldSize); // 4 output neurons
    net.initializeNetwork();
    
 
