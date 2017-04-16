@@ -4,9 +4,10 @@
 
 - [X] Network Initialization
 - [X] Input data preprocessing
-- [ ] Implement Forward Propogation
+- [X] Implement Forward Propogation
+- [ ] Parallelize Forward Propogation
 - [ ] Implement Backward Propogation
-- [ ] Parallelize Network Architecture
+- [ ] Parallelize Backward Propogation
 - [ ] Perform Strong Scaling Tests
 
 
