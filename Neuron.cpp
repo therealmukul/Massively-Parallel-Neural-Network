@@ -85,7 +85,7 @@ void Neuron::feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuro
    }
 
    output = sum;
-   cout << "   Neuron: " << index << " Output: " << sum << endl;
+   // cout << "   Neuron: " << index << " Output: " << sum << endl;
 
 
 }
