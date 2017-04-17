@@ -20,7 +20,7 @@ public:
    double getOutput();
    int getIndex();
    vector<Connection> getOutputWeights();
-   void feedForward(vector<Neuron> &prevLayerNeurons);
+   void feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
 };
 
 /*
@@ -35,12 +35,11 @@ public:
    Return: Neuron object
 */
 Neuron::Neuron(int numOutputs, int _index) {
-   output = 0.0;
+   output = 0.0;  // Default neuron value is set to 0.0
    for (int connection = 0; connection < numOutputs; connection++) {
       Connection c = Connection();
       c.weight = 0.1; // Change this to be a random value
       outputWeights.push_back(c);
-      
    }
    if (index == -1) {
       isGhost = true;
@@ -63,7 +62,7 @@ vector<Connection> Neuron::getOutputWeights() {
    for (int weight = 0; weight < outputWeights.size(); weight++) {
       _outputWeights.push_back(outputWeights[weight]);
    }
-   
+
    return _outputWeights;
 }
 
@@ -71,23 +70,22 @@ int Neuron::getIndex() {
    return index;
 }
 
-void Neuron::feedForward(vector<Neuron> &prevLayerNeurons) {
+void Neuron::feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
    double sum = 0.0;
    for (int i = 0; i < prevLayerNeurons.size(); i++) {
-      sum += prevLayerNeurons[i].getOutput() * 
+      sum += prevLayerNeurons[i].getOutput() *
              prevLayerNeurons[i].getOutputWeights()[index].weight;
    }
+
+   if (layerIndex > 1) {
+      // cout << "Rank: " << myRank << " LayerIndex: " << layerIndex << " " << "Neuron: " << index << " Connection from ghostNeuronTop: "
+      // << ghostNeuronTop->getOutputWeights().size() << " weight for connection " << ghostNeuronTop->getOutputWeights()[index].weight << endl;
+      sum += ghostNeuronTop->getOutput() * ghostNeuronTop->getOutputWeights()[index].weight;
+      sum += ghostNeuronBottom->getOutput() * ghostNeuronBottom->getOutputWeights()[index].weight;
+   }
+
    output = sum;
-   // cout << "   Neuron: " << index << " Output: " << sum << endl;
+   cout << "   Neuron: " << index << " Output: " << sum << endl;
 
-   
+
 }
-
-
-
-
-
-
-
-
-

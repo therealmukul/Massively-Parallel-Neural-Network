@@ -50,7 +50,7 @@ void Network::initializeNetwork() {
       int layerSize = networkTopology[currentLayer].size;
       int layerIndex = currentLayer;
       string layerType = networkTopology[currentLayer].type;
-      
+
       if (currentLayer <= networkTopology.size() - 1) {
          int numNeuronsInNextLayer = networkTopology[currentLayer + 1].size;
          Layer newLayer = Layer(layerSize, numNeuronsInNextLayer, layerType, layerIndex);
@@ -70,11 +70,11 @@ void Network::initializeNetwork() {
       Location of the testing input data file.
 
    TODO: This function can be made more efficent. I basically brute forced it for now.
-         Some sort of error checking should be added to make sure each input sample 
+         Some sort of error checking should be added to make sure each input sample
          contains the equivilant number of inputs as specifed in the input layer.
 
          Just realized that its not smart to load all input data into memory *face-palm*
-         OK for debugging small examples. Should change this later so that its part of 
+         OK for debugging small examples. Should change this later so that its part of
          forward propgation.
 */
 void Network::loadTestingInputData(const string &inputDataLoc) {
@@ -106,7 +106,7 @@ void Network::loadTestingInputData(const string &inputDataLoc) {
 }
 
 /*
-   Read the expected ouput file. Convert eac label into onehot encoding and store it in 
+   Read the expected ouput file. Convert eac label into onehot encoding and store it in
    outputData. Onehot enoding example given 4 classes: label 3 --> Vec<0, 0, 1, 0>
 
    Input: outputDataLoc
@@ -115,8 +115,8 @@ void Network::loadTestingInputData(const string &inputDataLoc) {
       The number of total classes which the net is classifying between.
 
    TODO: Just realized that its not smart to load all label data into memory *face-palm*
-         OK for debugging small examples. Should change this later so that its part of 
-         forward propgation.  
+         OK for debugging small examples. Should change this later so that its part of
+         forward propgation.
 */
 void Network::loadTestingOutputData(const string &outputDataLoc, const int &numClasses) {
    ifstream infile(outputDataLoc.c_str());
@@ -154,7 +154,7 @@ void Network::forwardPropogation() {
 
    // Forward Propogate
    for (int layerNum = 1; layerNum < layers.size(); layerNum++) {
-      // cout << layers[layerNum].getType() << " Rank " << myRank << endl;
+      cout << layers[layerNum].getType() << " Rank " << myRank << endl;
       Layer prevLayer = layers[layerNum - 1];
       layers[layerNum].feedForward(prevLayer);
       MPI_Barrier(MPI_COMM_WORLD);
@@ -164,7 +164,7 @@ void Network::forwardPropogation() {
 }
 
 
-void Network::printNetworkInfo() { 
+void Network::printNetworkInfo() {
    cout << "----------------------" << endl;
    cout << "Num Rank: " << worldSize << endl;
    cout << "Each ranks handles:" << endl;
@@ -175,6 +175,3 @@ void Network::printNetworkInfo() {
    }
    cout << "----------------------" << endl;
 }
-
-
-

@@ -25,17 +25,17 @@ int main(int argc, char *argv[]) {
    Network net = Network();
    net.addLayer("input", 3);  // 3 input neurons
    net.addLayer("hidden", 9/worldSize); // 12 hidden neurons
-   net.addLayer("output", 3/worldSize); // 4 output neurons
+   net.addLayer("output", 6/worldSize); // 4 output neurons
    net.initializeNetwork();
-   
+
 
    net.loadTestingInputData("testInput.txt");
    net.loadTestingOutputData("testLabels.txt", 4);
 
    if (myRank == 0) {
-      net.printNetworkInfo();
+      // net.printNetworkInfo();
    }
-   
+
 
 
    int iterations = 1;
