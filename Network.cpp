@@ -24,7 +24,7 @@ public:
    void loadTestingInputData(const string &inputDataLoc);
    void loadTestingOutputData(const string &outputDataLoc, const int &numClasses);
    void forwardPropogation();
-   void computeLoss(int size);
+   double computeLoss(int size);
 
    void printNetworkInfo();  // For debugging purposes
 };
@@ -181,8 +181,9 @@ void Network::forwardPropogation() {
    sampleIndex++;
 }
 
-void Network::computeLoss(int size) {
+double Network::computeLoss(int size) {
    int ret = MPI_Allgather(&localData, outputsPerRank, MPI_DOUBLE, globalData, outputsPerRank, MPI_DOUBLE, MPI_COMM_WORLD);
+   double loss = 0;
    if (ret == MPI_SUCCESS) {
       vector<double> yHat;
       for (int i = outputsPerRank; i < (outputsPerRank * (worldSize)); i++) {
@@ -192,30 +193,25 @@ void Network::computeLoss(int size) {
       vector<double> yPred = outputData[sampleIndex - 1];
       vector<double> yGradient;
 
-      if (myRank == 0) {
-         for (int i = 0; i < yHat.size(); i++) {
-            double gradVal = -1 * (yPred[i] - yHat[i]);
-            yGradient.push_back(gradVal);
-         }
-
-         // printf("Rank %d has data: ", myRank);
-         // for (int j = 0; j < yGradient.size(); j++) {
-         //    cout << yGradient[j] << " ";
-         // }
-         // cout << endl;
-
-         double loss = 0;
-         for (int i = 0; i < yGradient.size(); i++) {
-            loss += yGradient[i] * yGradient[i];
-         }
-         loss = loss / 2;
-         cout << loss << endl;
+      for (int i = 0; i < yHat.size(); i++) {
+         double gradVal = -1 * (yPred[i] - yHat[i]);
+         yGradient.push_back(gradVal);
       }
 
+      // printf("Rank %d has data: ", myRank);
+      // for (int j = 0; j < yGradient.size(); j++) {
+      //    cout << yGradient[j] << " ";
+      // }
+      // cout << endl;
 
 
-
+      for (int i = 0; i < yGradient.size(); i++) {
+         loss += yGradient[i] * yGradient[i];
+      }
+      loss = loss / 2;
    }
+
+   return loss;
 }
 
 

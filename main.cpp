@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
    // Perform forward propogation for the specified number of iterations
    for (int i = 0; i < iterations; i++) {
       net.forwardPropogation();
-      net.computeLoss(size);
+      cout << net.computeLoss(size) << endl;
    }
 
 
