@@ -6,6 +6,7 @@ using namespace std;
 
 struct Connection {
    double weight;
+   double deltaWeight;
 };
 
 class Neuron {
@@ -13,6 +14,7 @@ private:
    int index;
    double output;
    double gradient;
+   double eta;
    bool isGhost;
    vector<Connection> outputWeights;
    double sigmoid(double x);
@@ -26,6 +28,7 @@ public:
    vector<Connection> getOutputWeights();
    void feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
    void calcHiddenGradients(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
+   void updateWeights(vector<Neuron> &prevLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
    double sumDOW(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron * ghostNeuronBottom);
 };
 
@@ -53,6 +56,7 @@ double Neuron::sigmoidDerivative(double x) {
 */
 Neuron::Neuron(int numOutputs, int _index) {
    output = 0.0;  // Default neuron value is set to 0.0
+   eta = 0.5;
    for (int connection = 0; connection < numOutputs; connection++) {
       Connection c = Connection();
       c.weight = 0.1; // Change this to be a random value
@@ -143,5 +147,19 @@ void Neuron::calcHiddenGradients(vector<Neuron> &nextLayerNeurons, Neuron *ghost
    double dow = sumDOW(nextLayerNeurons, ghostNeuronTop, ghostNeuronBottom);
    // cout << dow << endl;
    gradient = dow * sigmoidDerivative(output);
-   cout << gradient << endl;
+   // cout << gradient << endl;
+}
+
+void Neuron::updateWeights(vector<Neuron> &prevLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
+   for (int i = 0; i < prevLayerNeurons.size(); i++) {
+      Neuron &neuron = prevLayerNeurons[i];
+      double oldDeltaWeight = neuron.outputWeights[index].deltaWeight;
+      double newDeltaWeight = eta * neuron.getOutput() * gradient + oldDeltaWeight;
+
+      // printf("oldDeltaWeight %f, newDeltaWeight %f\n", oldDeltaWeight, newDeltaWeight);
+
+      neuron.outputWeights[index].deltaWeight = newDeltaWeight;
+      neuron.outputWeights[index].weight += newDeltaWeight;
+   }
+
 }

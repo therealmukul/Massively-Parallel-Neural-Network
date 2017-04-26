@@ -54,15 +54,16 @@ int main(int argc, char *argv[]) {
 
    }
 
-   int iterations = 1;
+   int iterations = 2;
    // Perform forward propogation for the specified number of iterations
    for (int i = 0; i < iterations; i++) {
       net.forwardPropagation();
-      net.computeLoss(size);
+      double loss = net.computeLoss(size);
       if (myRank == 0) {
-         // printf("Iter: %d Loss: %f\n", i, loss);
+         printf("Iter: %d Loss: %f\n", i, loss);
       }
-      net.backwardPropagation();
+      // net.backwardPropagation();
+      usleep(100000);
    }
 
 

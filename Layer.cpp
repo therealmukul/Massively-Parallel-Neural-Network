@@ -24,6 +24,7 @@ public:
    vector<Neuron>* getNeuronsReference();
    void feedForward(Layer &prevLayer);
    void calcHiddenGradients(Layer &nextLayer);
+   void updateWeights(Layer &prevLayer);
    void setNeuronGradientForNeuronAtIndex(int index, double gradient);
 };
 
@@ -221,4 +222,11 @@ void Layer::calcHiddenGradients(Layer &nextLayer) {
 
 void Layer::setNeuronGradientForNeuronAtIndex(int index, double gradient) {
    neurons[index].setGradient(gradient);
+}
+
+void Layer::updateWeights(Layer &prevLayer) {
+   vector<Neuron> prevLayerNeurons = prevLayer.getNeurons();
+   for (int i = 0; i < neurons.size(); i++) {
+      neurons[i].updateWeights(prevLayerNeurons, ghostNeuronTop, ghostNeuronBottom);
+   }
 }

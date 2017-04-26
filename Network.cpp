@@ -208,11 +208,15 @@ void Network::backwardPropagation() {
       for (int layerNum = layers.size() - 2; layerNum > 0; layerNum--) {
          Layer &hiddenLayer = layers[layerNum];
          Layer &nextLayer = layers[layerNum + 1];
-
          hiddenLayer.calcHiddenGradients(nextLayer);
       }
 
       // Updated the weights
+      for (int layerNum = layers.size() - 1; layerNum > 0; layerNum--) {
+         Layer &currentLayer = layers[layerNum];
+         Layer &prevLayer = layers[layerNum - 1];
+         currentLayer.updateWeights(prevLayer);
+      }
 
    }
 
@@ -228,11 +232,11 @@ double Network::computeLoss(int size) {
          yHat.push_back(globalData[i]);
       }
 
-      // printf("Rank %d has data: ", myRank);
-      // for (int i = 0; i < yHat.size(); i++) {
-      //    cout << yHat[i] << " ";
-      // }
-      // cout << endl;
+      printf("Rank %d has data: ", myRank);
+      for (int i = 0; i < yHat.size(); i++) {
+         cout << yHat[i] << " ";
+      }
+      cout << endl;
 
       yHat = multiclassSigmoid(yHat);
       vector<double> yPred = outputData[sampleIndex - 1];
