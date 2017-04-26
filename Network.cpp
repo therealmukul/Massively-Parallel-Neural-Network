@@ -16,6 +16,7 @@ private:
    vector<LayerTopology> networkTopology;
    vector<vector<double> > inputData;
    vector<vector<double> > outputData;
+   vector<double> multiclassSigmoid(vector<double> &yHat);
 public:
    Network();
    void addLayer(const string &_type, const int &_size);
@@ -27,6 +28,18 @@ public:
 
    void printNetworkInfo();  // For debugging purposes
 };
+
+// Private Methods
+vector<double> Network::multiclassSigmoid(vector<double> &yHat) {
+   double totalExp = 0;
+   for (int i = 0; i < yHat.size(); i++) {
+      totalExp += exp(yHat[i]);
+   }
+   for (int j = 0; j < yHat.size(); j++) {
+      yHat[j] = exp(yHat[j]) / totalExp;
+   }
+   return yHat;
+}
 
 Network::Network() {
    sampleIndex = 0;
@@ -170,12 +183,23 @@ void Network::forwardPropogation() {
 void Network::computeLoss(int size) {
    int ret = MPI_Allgather(&localData, outputsPerRank, MPI_DOUBLE, globalData, outputsPerRank, MPI_DOUBLE, MPI_COMM_WORLD);
    if (ret == MPI_SUCCESS) {
+      vector<double> yHat;
+      for (int i = outputsPerRank; i < (outputsPerRank * (worldSize)); i++) {
+         yHat.push_back(globalData[i]);
+      }
+      yHat = multiclassSigmoid(yHat);
+
+      printf("Rank %d has data: ", myRank);
+      for (int j = 0; j < yHat.size(); j++) {
+         cout << yHat[j] << " ";
+      }
+      cout << endl;
       // if (myRank == 0) {
-         printf("Rank %d has data: ", myRank);
-         for (int i = 0; i < size; i++) {
-            cout << globalData[i] << " ";
-         }
-         cout << endl;
+      //    printf("Rank %d has data: ", myRank);
+      //    for (int i = 0; i < size; i++) {
+      //       cout << globalData[i] << " ";
+      //    }
+      //    cout << endl;
       // }
    }
 }

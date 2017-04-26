@@ -14,6 +14,7 @@ private:
    double output;
    bool isGhost;
    vector<Connection> outputWeights;
+   double sigmoid(double x);
 public:
    Neuron(int numOutputs, int _index);
    void setOutput(double value);
@@ -22,6 +23,13 @@ public:
    vector<Connection> getOutputWeights();
    void feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
 };
+
+// Private Methods
+
+double Neuron::sigmoid(double x) {
+   double expVal = exp(-x);
+   return 1.0 / (1.0 + expVal);
+}
 
 /*
    Construct a single Neuron object
@@ -70,6 +78,7 @@ int Neuron::getIndex() {
    return index;
 }
 
+
 void Neuron::feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
    double sum = 0.0;
    for (int i = 0; i < prevLayerNeurons.size(); i++) {
@@ -84,9 +93,17 @@ void Neuron::feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuro
       sum += ghostNeuronBottom->getOutput() * ghostNeuronBottom->getOutputWeights()[index].weight;
    }
 
-   output = sum;
+   // Use the sigmoid activation function
+   if (layerIndex < 2) {
+      output = sigmoid(sum);
+   } else {
+      output = sum;
+   }
+
+
+   // Store in local data so that MPI_Allgather() can access it
+   // TODO: Change this so that the last layer is not hard coded to 2
    if (layerIndex == 2) {
-      // cout << "   Neuron: " << index << " Output: " << sum << endl;
       localData[index] = output;
    }
 

@@ -5,6 +5,7 @@
 #include <string>
 #include <mpi.h>
 #include <unistd.h>
+#include <math.h>
 
 //  Global Variables
 int worldSize;
@@ -53,7 +54,7 @@ int main(int argc, char *argv[]) {
 
    }
 
-   int iterations = 3;
+   int iterations = 1;
    // Perform forward propogation for the specified number of iterations
    for (int i = 0; i < iterations; i++) {
       net.forwardPropogation();
