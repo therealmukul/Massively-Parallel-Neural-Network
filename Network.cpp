@@ -157,10 +157,11 @@ void Network::loadTestingOutputData(const string &outputDataLoc, const int &numC
 }
 
 void Network::forwardPropogation() {
+   // Select a sample from the input data
+   int index = sampleIndex % inputData.size();
+   vector<double> inputSample = inputData[index];
+
    if (myRank > 0) {
-      // Select a sample from the input data
-      int index = sampleIndex % inputData.size();
-      vector<double> inputSample = inputData[index];
 
       // Feed the sample input values into the neurons in the input layer
       int inputLayerIndex = 0;
@@ -176,8 +177,8 @@ void Network::forwardPropogation() {
          // MPI_Barrier(MPI_COMM_WORLD);
       }
 
-      sampleIndex++;
    }
+   sampleIndex++;
 }
 
 void Network::computeLoss(int size) {
@@ -188,19 +189,32 @@ void Network::computeLoss(int size) {
          yHat.push_back(globalData[i]);
       }
       yHat = multiclassSigmoid(yHat);
+      vector<double> yPred = outputData[sampleIndex - 1];
+      vector<double> yGradient;
 
-      printf("Rank %d has data: ", myRank);
-      for (int j = 0; j < yHat.size(); j++) {
-         cout << yHat[j] << " ";
+      if (myRank == 0) {
+         for (int i = 0; i < yHat.size(); i++) {
+            double gradVal = -1 * (yPred[i] - yHat[i]);
+            yGradient.push_back(gradVal);
+         }
+
+         // printf("Rank %d has data: ", myRank);
+         // for (int j = 0; j < yGradient.size(); j++) {
+         //    cout << yGradient[j] << " ";
+         // }
+         // cout << endl;
+
+         double loss = 0;
+         for (int i = 0; i < yGradient.size(); i++) {
+            loss += yGradient[i] * yGradient[i];
+         }
+         loss = loss / 2;
+         cout << loss << endl;
       }
-      cout << endl;
-      // if (myRank == 0) {
-      //    printf("Rank %d has data: ", myRank);
-      //    for (int i = 0; i < size; i++) {
-      //       cout << globalData[i] << " ";
-      //    }
-      //    cout << endl;
-      // }
+
+
+
+
    }
 }
 

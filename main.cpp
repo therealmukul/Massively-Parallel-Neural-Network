@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
    MPI_Comm_rank( MPI_COMM_WORLD, &myRank);
 
    int numInputs = 3;
-   int numHidden = 2;
-   int numOutputs = 2;
+   int numHidden = 8;
+   int numOutputs = 4;
 
    int size = numOutputs + (numOutputs / (worldSize - 1));
    outputsPerRank = numOutputs / (worldSize - 1);
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 
    }
 
-   int iterations = 1;
+   int iterations = 4;
    // Perform forward propogation for the specified number of iterations
    for (int i = 0; i < iterations; i++) {
       net.forwardPropogation();
