@@ -37,11 +37,13 @@ int main(int argc, char *argv[]) {
    int numOutputs = 4;
 
    // Check that the number of ranks does not exceed the maximum allowed
-   if(worldSize > (gcd(numHidden,numOutputs)+1){
-      printf("Error: Too many ranks; number of ranks can be at max GCD(numHidden,numOutputs)+1\n");
-      exit(EXIT_FAILURE);
+   if(myRank == 0){
+      if(worldSize > (gcd(numHidden,numOutputs)+1)){
+         printf("Error: Too many ranks; number of ranks can be at max GCD(numHidden,numOutputs)+1\n");
+         exit(EXIT_FAILURE);
+      }
    }
-
+      
    int size = numOutputs + (numOutputs / (worldSize - 1));
    outputsPerRank = numOutputs / (worldSize - 1);
 
