@@ -6,6 +6,7 @@
 #include <mpi.h>
 #include <unistd.h>
 #include <math.h>
+#include <stdlib.h>
 
 //  Global Variables
 int worldSize;
@@ -21,7 +22,9 @@ int outputsPerRank;
 
 using namespace std;
 
-
+int gcd(int a, int b) {
+   return b == 0 ? a : gcd(b, a % b);
+}
 
 int main(int argc, char *argv[]) {
 
@@ -32,6 +35,12 @@ int main(int argc, char *argv[]) {
    int numInputs = 3;
    int numHidden = 4;
    int numOutputs = 4;
+
+   // Check that the number of ranks does not exceed the maximum allowed
+   if(worldSize > (gcd(numHidden,numOutputs)+1){
+      printf("Error: Too many ranks; number of ranks can be at max GCD(numHidden,numOutputs)+1\n");
+      exit(EXIT_FAILURE);
+   }
 
    int size = numOutputs + (numOutputs / (worldSize - 1));
    outputsPerRank = numOutputs / (worldSize - 1);
