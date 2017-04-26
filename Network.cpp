@@ -16,6 +16,8 @@ private:
    vector<LayerTopology> networkTopology;
    vector<vector<double> > inputData;
    vector<vector<double> > outputData;
+   vector<double> targetOutput;
+   vector<double> outputGradients;
    vector<double> multiclassSigmoid(vector<double> &yHat);
 public:
    Network();
@@ -23,7 +25,8 @@ public:
    void initializeNetwork(int size);
    void loadTestingInputData(const string &inputDataLoc);
    void loadTestingOutputData(const string &outputDataLoc, const int &numClasses);
-   void forwardPropogation();
+   void forwardPropagation();
+   void backwardPropagation();
    double computeLoss(int size);
 
    void printNetworkInfo();  // For debugging purposes
@@ -156,7 +159,7 @@ void Network::loadTestingOutputData(const string &outputDataLoc, const int &numC
    // }
 }
 
-void Network::forwardPropogation() {
+void Network::forwardPropagation() {
    // Select a sample from the input data
    int index = sampleIndex % inputData.size();
    vector<double> inputSample = inputData[index];
@@ -181,7 +184,42 @@ void Network::forwardPropogation() {
    sampleIndex++;
 }
 
+void Network::backwardPropagation() {
+
+   if (myRank > 0) {
+      //    printf("Rank %d has data: ", myRank);
+      //    for (int j = 0; j < outputGradients.size(); j++) {
+      //       cout << outputGradients[j] << " ";
+      //    }
+      //    cout << endl;
+
+
+      // Assign output gradients to each neuron
+      int numOutputs = networkTopology.back().size;
+      int offset = (myRank * numOutputs) - numOutputs;
+      int neuronIndex = 0;
+      for (int i = offset; i < (offset + numOutputs); i++) {
+         double gradient = outputGradients[i];
+         layers.back().setNeuronGradientForNeuronAtIndex(neuronIndex, gradient);
+         neuronIndex++;
+      }
+
+      // Calculate and assign gradients on hidden layers
+      for (int layerNum = layers.size() - 2; layerNum > 0; layerNum--) {
+         Layer &hiddenLayer = layers[layerNum];
+         Layer &nextLayer = layers[layerNum + 1];
+
+         hiddenLayer.calcHiddenGradients(nextLayer);
+      }
+
+      // Updated the weights
+
+   }
+
+}
+
 double Network::computeLoss(int size) {
+   int outputsPerRank = networkTopology.back().size;
    int ret = MPI_Allgather(&localData, outputsPerRank, MPI_DOUBLE, globalData, outputsPerRank, MPI_DOUBLE, MPI_COMM_WORLD);
    double loss = 0;
    if (ret == MPI_SUCCESS) {
@@ -189,6 +227,13 @@ double Network::computeLoss(int size) {
       for (int i = outputsPerRank; i < (outputsPerRank * (worldSize)); i++) {
          yHat.push_back(globalData[i]);
       }
+
+      // printf("Rank %d has data: ", myRank);
+      // for (int i = 0; i < yHat.size(); i++) {
+      //    cout << yHat[i] << " ";
+      // }
+      // cout << endl;
+
       yHat = multiclassSigmoid(yHat);
       vector<double> yPred = outputData[sampleIndex - 1];
       vector<double> yGradient;
@@ -198,17 +243,14 @@ double Network::computeLoss(int size) {
          yGradient.push_back(gradVal);
       }
 
-      // printf("Rank %d has data: ", myRank);
-      // for (int j = 0; j < yGradient.size(); j++) {
-      //    cout << yGradient[j] << " ";
-      // }
-      // cout << endl;
-
+      outputGradients = yGradient;
+      targetOutput = yPred;
 
       for (int i = 0; i < yGradient.size(); i++) {
          loss += yGradient[i] * yGradient[i];
       }
       loss = loss / 2;
+      // backwardPropagation();
    }
 
    return loss;

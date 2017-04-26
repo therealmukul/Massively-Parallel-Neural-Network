@@ -21,7 +21,10 @@ public:
    int getSize();
    int getIndex();
    vector<Neuron> getNeurons();
+   vector<Neuron>* getNeuronsReference();
    void feedForward(Layer &prevLayer);
+   void calcHiddenGradients(Layer &nextLayer);
+   void setNeuronGradientForNeuronAtIndex(int index, double gradient);
 };
 
 /*
@@ -80,6 +83,11 @@ int Layer::getIndex() {
 vector<Neuron> Layer::getNeurons() {
    return neurons;
 }
+
+vector<Neuron>* Layer::getNeuronsReference() {
+   return &neurons;
+}
+
 
 void Layer::setOutputValueForNeuronAtIndex(int index, double _outputValue) {
    neurons[index].setOutput(_outputValue);
@@ -202,4 +210,15 @@ void Layer::feedForward(Layer &prevLayer) {
    }
 
    performGhostNeuronMsgPassing();
+}
+
+void Layer::calcHiddenGradients(Layer &nextLayer) {
+   vector<Neuron> nextLayerNeurons = nextLayer.getNeurons();
+   for (int i = 0; i < neurons.size(); i++) {
+      neurons[i].calcHiddenGradients(nextLayerNeurons, ghostNeuronTop, ghostNeuronBottom);
+   }
+}
+
+void Layer::setNeuronGradientForNeuronAtIndex(int index, double gradient) {
+   neurons[index].setGradient(gradient);
 }

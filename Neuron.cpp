@@ -12,16 +12,21 @@ class Neuron {
 private:
    int index;
    double output;
+   double gradient;
    bool isGhost;
    vector<Connection> outputWeights;
    double sigmoid(double x);
+   double sigmoidDerivative(double x);
 public:
    Neuron(int numOutputs, int _index);
    void setOutput(double value);
+   void setGradient(double value);
    double getOutput();
    int getIndex();
    vector<Connection> getOutputWeights();
    void feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
+   void calcHiddenGradients(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
+   double sumDOW(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron * ghostNeuronBottom);
 };
 
 // Private Methods
@@ -29,6 +34,10 @@ public:
 double Neuron::sigmoid(double x) {
    double expVal = exp(-x);
    return 1.0 / (1.0 + expVal);
+}
+
+double Neuron::sigmoidDerivative(double x) {
+   return sigmoid(x) * (1 - sigmoid(x));
 }
 
 /*
@@ -61,9 +70,14 @@ void Neuron::setOutput(double value) {
    output = value;
 }
 
+void Neuron::setGradient(double value) {
+   gradient = value;
+}
+
 double Neuron::getOutput() {
    return output;
 }
+
 
 vector<Connection> Neuron::getOutputWeights() {
    vector<Connection> _outputWeights;
@@ -107,4 +121,27 @@ void Neuron::feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuro
       localData[index] = output;
    }
 
+}
+
+double Neuron::sumDOW(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
+   double sum = 0.0;
+
+   // Sum the contribution of errors at the node that are feedForward
+   for (int i = 0; i < nextLayerNeurons.size(); i++) {
+      sum += outputWeights[i].weight * nextLayerNeurons[i].gradient;
+   }
+   // Sum up ghosh neuron errors
+   for (int i = 0; i < nextLayerNeurons.size(); i++) {
+      sum += ghostNeuronTop->getOutputWeights()[i].weight * nextLayerNeurons[i].gradient;
+      sum += ghostNeuronBottom->getOutputWeights()[i].weight * nextLayerNeurons[i].gradient;
+   }
+
+   return sum;
+}
+
+void Neuron::calcHiddenGradients(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
+   double dow = sumDOW(nextLayerNeurons, ghostNeuronTop, ghostNeuronBottom);
+   // cout << dow << endl;
+   gradient = dow * sigmoidDerivative(output);
+   cout << gradient << endl;
 }

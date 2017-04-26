@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
    MPI_Comm_rank( MPI_COMM_WORLD, &myRank);
 
    int numInputs = 3;
-   int numHidden = 8;
+   int numHidden = 4;
    int numOutputs = 4;
 
    int size = numOutputs + (numOutputs / (worldSize - 1));
@@ -54,11 +54,15 @@ int main(int argc, char *argv[]) {
 
    }
 
-   int iterations = 4;
+   int iterations = 1;
    // Perform forward propogation for the specified number of iterations
    for (int i = 0; i < iterations; i++) {
-      net.forwardPropogation();
-      cout << net.computeLoss(size) << endl;
+      net.forwardPropagation();
+      net.computeLoss(size);
+      if (myRank == 0) {
+         // printf("Iter: %d Loss: %f\n", i, loss);
+      }
+      net.backwardPropagation();
    }
 
 
