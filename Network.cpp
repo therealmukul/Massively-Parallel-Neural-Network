@@ -19,10 +19,11 @@ private:
 public:
    Network();
    void addLayer(const string &_type, const int &_size);
-   void initializeNetwork();
+   void initializeNetwork(int size);
    void loadTestingInputData(const string &inputDataLoc);
    void loadTestingOutputData(const string &outputDataLoc, const int &numClasses);
    void forwardPropogation();
+   void computeLoss(int size);
 
    void printNetworkInfo();  // For debugging purposes
 };
@@ -45,7 +46,7 @@ void Network::addLayer(const string &_type, const int &_size) {
    Once all layers have been added to construct the topology of the network,
    this function should be called to actaully build/initialize the network.
 */
-void Network::initializeNetwork() {
+void Network::initializeNetwork(int size) {
    for (int currentLayer = 0; currentLayer < networkTopology.size(); currentLayer++) {
       int layerSize = networkTopology[currentLayer].size;
       int layerIndex = currentLayer;
@@ -60,6 +61,8 @@ void Network::initializeNetwork() {
          layers.push_back(newLayer);
       }
    }
+
+   globalData = (double*)malloc(size * sizeof(double));
 }
 
 /*
@@ -141,33 +144,47 @@ void Network::loadTestingOutputData(const string &outputDataLoc, const int &numC
 }
 
 void Network::forwardPropogation() {
+   if (myRank > 0) {
+      // Select a sample from the input data
+      int index = sampleIndex % inputData.size();
+      vector<double> inputSample = inputData[index];
 
-   // Select a sample from the input data
-   int index = sampleIndex % inputData.size();
-   vector<double> inputSample = inputData[index];
+      // Feed the sample input values into the neurons in the input layer
+      int inputLayerIndex = 0;
+      for (int value = 0; value < inputSample.size(); value++) {
+         layers[inputLayerIndex].setOutputValueForNeuronAtIndex(value, inputSample[value]);
+      }
 
-   // Feed the sample input values into the neurons in the input layer
-   int inputLayerIndex = 0;
-   for (int value = 0; value < inputSample.size(); value++) {
-      layers[inputLayerIndex].setOutputValueForNeuronAtIndex(value, inputSample[value]);
+      // Forward Propogate
+      for (int layerNum = 1; layerNum < layers.size(); layerNum++) {
+         // cout << layers[layerNum].getType() << " Rank " << myRank << endl;
+         Layer prevLayer = layers[layerNum - 1];
+         layers[layerNum].feedForward(prevLayer);
+         // MPI_Barrier(MPI_COMM_WORLD);
+      }
+
+      sampleIndex++;
    }
+}
 
-   // Forward Propogate
-   for (int layerNum = 1; layerNum < layers.size(); layerNum++) {
-      cout << layers[layerNum].getType() << " Rank " << myRank << endl;
-      Layer prevLayer = layers[layerNum - 1];
-      layers[layerNum].feedForward(prevLayer);
-      MPI_Barrier(MPI_COMM_WORLD);
+void Network::computeLoss(int size) {
+   int ret = MPI_Allgather(&localData, outputsPerRank, MPI_DOUBLE, globalData, outputsPerRank, MPI_DOUBLE, MPI_COMM_WORLD);
+   if (ret == MPI_SUCCESS) {
+      // if (myRank == 0) {
+         printf("Rank %d has data: ", myRank);
+         for (int i = 0; i < size; i++) {
+            cout << globalData[i] << " ";
+         }
+         cout << endl;
+      // }
    }
-
-   sampleIndex++;
 }
 
 
 void Network::printNetworkInfo() {
    cout << "----------------------" << endl;
    cout << "Num Rank: " << worldSize << endl;
-   cout << "Each ranks handles:" << endl;
+   cout << "Each rank other than master handles:" << endl;
    for (int i = 0; i < layers.size(); i++) {
       string layerType = layers[i].getType();
       int layerSize = layers[i].getSize();

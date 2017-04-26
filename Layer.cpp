@@ -97,21 +97,21 @@ void Layer::performGhostNeuronMsgPassing() {
    MPI_Request sndBottomRequest;
    MPI_Request sndTopRequest;
 
-   if (type != "output" and worldSize > 1) {
-      if (myRank == 0) { // FIRST RANK
+   if (type != "output" and worldSize > 2) {
+      if (myRank == 1) { // FIRST RANK
 
          // R_0 (firstNeuronOutput) -> R_N (ghostBottom)
          MPI_Isend(&firstNeuronOutput, 1, MPI_DOUBLE, (worldSize - 1), 0, MPI_COMM_WORLD, &sndBottomRequest);
          MPI_Wait(&sndBottomRequest, &status);
          // printf("Rank %d sent value %f to rank %d\n", myRank, firstNeuronOutput, (worldSize - 1));
 
-         // R_0 (lastNeuronOuput) -> R_1 (ghostTop)
-         MPI_Isend(&lastNeuronOutput, 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, &sndTopRequest);
+         // R_0 (lastNeuronOuput) -> R_2 (ghostTop)
+         MPI_Isend(&lastNeuronOutput, 1, MPI_DOUBLE, 2, 0, MPI_COMM_WORLD, &sndTopRequest);
          MPI_Wait(&sndTopRequest, &status);
          // printf("Rank %d sent value %f to rank %d\n", myRank, lastNeuronOutput, 1);
 
-         // ghostBottomOutput <- R_1 (firstNeuronOutput)
-         int ret = MPI_Irecv(&ghostBottomOutput, 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, &rcvBottomRequest);
+         // ghostBottomOutput <- R_2 (firstNeuronOutput)
+         int ret = MPI_Irecv(&ghostBottomOutput, 1, MPI_DOUBLE, 2, 0, MPI_COMM_WORLD, &rcvBottomRequest);
          MPI_Wait(&rcvBottomRequest, &status);
          if (ret == MPI_SUCCESS) {
             // printf("Rank %d received value %f from rank 1\n", myRank, ghostBottomOutput);
@@ -136,13 +136,13 @@ void Layer::performGhostNeuronMsgPassing() {
          MPI_Wait(&sndBottomRequest, &status);
          // printf("Rank %d sent value %f to rank %d\n", myRank, firstNeuronOutput, (myRank - 1));
 
-         // R_Last (lastNeuronOutput) -> R_0 (ghostTop)
-         MPI_Isend(&lastNeuronOutput, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, &sndTopRequest);
+         // R_Last (lastNeuronOutput) -> R_1 (ghostTop)
+         MPI_Isend(&lastNeuronOutput, 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, &sndTopRequest);
          MPI_Wait(&sndTopRequest, &status);
          // printf("Rank %d sent value %f to rank %d\n", myRank, lastNeuronOutput, 0);
 
-         // ghostBottomOutput <- R_0 (firstNeuronOutput)
-         int ret = MPI_Irecv(&ghostBottomOutput, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, &rcvBottomRequest);
+         // ghostBottomOutput <- R_1 (firstNeuronOutput)
+         int ret = MPI_Irecv(&ghostBottomOutput, 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, &rcvBottomRequest);
          MPI_Wait(&rcvBottomRequest, &status);
          if (ret == MPI_SUCCESS) {
             // printf("Rank %d received value %f from rank 0\n", myRank, ghostBottomOutput);
@@ -186,6 +186,7 @@ void Layer::performGhostNeuronMsgPassing() {
          if (ret2 == MPI_SUCCESS) {
             // printf("Rank %d received value %f from rank %d\n", myRank, ghostTopOutput, (myRank - 1));
             ghostNeuronTop->setOutput(ghostTopOutput);
+
          }
          // cout << ghostNeuronTop->getOutput() << endl;
       }
