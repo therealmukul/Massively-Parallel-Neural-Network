@@ -5,7 +5,7 @@
 - [X] Network Initialization
 - [X] Input data preprocessing
 - [X] Implement Forward Propagation
-- [ ] Parallelize Forward Propagation
+- [X] Parallelize Forward Propagation
 - [ ] Implement Backward Propagation
 - [ ] Parallelize Backward Propagation
 - [ ] Perform Strong Scaling Tests
