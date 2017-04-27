@@ -6,8 +6,8 @@
 - [X] Input data preprocessing
 - [X] Implement Forward Propagation
 - [X] Parallelize Forward Propagation
-- [ ] Implement Backward Propagation
-- [ ] Parallelize Backward Propagation
+- [X] Implement Backward Propagation
+- [X] Parallelize Backward Propagation
 - [ ] Perform Strong Scaling Tests
 
 
