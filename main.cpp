@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
    if(myRank == 0){
       if(worldSize > (gcd(numHidden,numOutputs)+1)){
          printf("Error: Too many ranks; number of ranks can be at max GCD(numHidden,numOutputs)+1\n");
-         exit(EXIT_FAILURE);
+         MPI_Abort(MPI_COMM_WORLD,1);
       }
    }
       
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
    // Construct a NN with 1 input layer, 1 hidden layer, and 1 output layer
    Network net = Network();
-   net.addLayer("input", numInputs);  // 3 input neurons
+   net.addLayer("iput", numInputs);  // 3 input neurons
    net.addLayer("hidden", numHidden/(worldSize - 1)); // 12 hidden neurons
    net.addLayer("output", numOutputs/(worldSize - 1)); // 4 output neurons
    net.initializeNetwork(size);

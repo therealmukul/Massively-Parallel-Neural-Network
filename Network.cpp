@@ -52,10 +52,17 @@ Network::Network() {
    Add layers to define the topology of the network
 */
 void Network::addLayer(const string &_type, const int &_size) {
-   LayerTopology lyrTop = LayerTopology();
-   lyrTop.size = _size;
-   lyrTop.type = _type;
-   networkTopology.push_back(lyrTop);
+   if(_type == "input" || _type == "hidden" || _type == "output"){
+      LayerTopology lyrTop = LayerTopology();
+      lyrTop.size = _size;
+      lyrTop.type = _type;
+      networkTopology.push_back(lyrTop);
+   }else{
+      if(myRank == 0){
+         cout << "Error: "<< _type <<" is not a valid layer type. Valid layer types are input, hidden, and output." << "\n";
+         MPI_Abort(MPI_COMM_WORLD,1);
+      }
+   }
 }
 
 /*
