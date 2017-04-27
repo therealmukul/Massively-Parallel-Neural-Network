@@ -54,20 +54,32 @@ int main(int argc, char *argv[]) {
 
    }
 
-   int iterations = 2;
+   int iterations = 200;
    // Perform forward propogation for the specified number of iterations
    for (int i = 0; i < iterations; i++) {
       net.forwardPropagation();
+      // if (myRank == 1) {
+      //    net.testUpdate();
+      // }
+
+      // net.testUpdate();
       double loss = net.computeLoss(size);
       if (myRank == 0) {
          printf("Iter: %d Loss: %f\n", i, loss);
       }
-      // net.backwardPropagation();
-      usleep(100000);
+      // if (myRank == 1) {
+      //    cout << "Rank 1 Input Layer BEFORE" << endl;
+      //    net.printLayerWeights(0);
+      // }
+      net.backwardPropagation();
+      // if (myRank == 1) {
+      //    cout << "Rank 1 Input Layer AFTER" << endl;
+      //    net.printLayerWeights(0);
+      // }
+      // usleep(1000000);
+
+
    }
-
-
-
 
    MPI_Finalize();
    return 0;

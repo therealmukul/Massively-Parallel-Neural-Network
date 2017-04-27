@@ -26,10 +26,12 @@ public:
    double getOutput();
    int getIndex();
    vector<Connection> getOutputWeights();
-   void feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
-   void calcHiddenGradients(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
-   void updateWeights(vector<Neuron> &prevLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
-   double sumDOW(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron * ghostNeuronBottom);
+   void feedForward(vector<Neuron*> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
+   void calcHiddenGradients(vector<Neuron*> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom);
+   void updateWeights(vector<Neuron*> &prevLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom, int layerNum);
+   double sumDOW(vector<Neuron*> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron * ghostNeuronBottom);
+   void setOutputWeightForIndex(int index, double _weight);
+   void setOutputDeltaWeightForIndex(int index, double _dweight);
 };
 
 // Private Methods
@@ -56,7 +58,7 @@ double Neuron::sigmoidDerivative(double x) {
 */
 Neuron::Neuron(int numOutputs, int _index) {
    output = 0.0;  // Default neuron value is set to 0.0
-   eta = 0.5;
+   eta = 0.01;
    for (int connection = 0; connection < numOutputs; connection++) {
       Connection c = Connection();
       c.weight = 0.1; // Change this to be a random value
@@ -96,12 +98,21 @@ int Neuron::getIndex() {
    return index;
 }
 
+void Neuron::setOutputWeightForIndex(int index, double _weight) {
+   outputWeights[index].weight = _weight;
+}
 
-void Neuron::feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
+void Neuron::setOutputDeltaWeightForIndex(int index, double _dweight) {
+   outputWeights[index].deltaWeight = _dweight;
+}
+
+
+
+void Neuron::feedForward(vector<Neuron*> &prevLayerNeurons, int layerIndex, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
    double sum = 0.0;
    for (int i = 0; i < prevLayerNeurons.size(); i++) {
-      sum += prevLayerNeurons[i].getOutput() *
-             prevLayerNeurons[i].getOutputWeights()[index].weight;
+      sum += prevLayerNeurons[i]->getOutput() *
+             prevLayerNeurons[i]->getOutputWeights()[index].weight;
    }
 
    if (layerIndex > 1) {
@@ -127,39 +138,53 @@ void Neuron::feedForward(vector<Neuron> &prevLayerNeurons, int layerIndex, Neuro
 
 }
 
-double Neuron::sumDOW(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
+double Neuron::sumDOW(vector<Neuron*> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
    double sum = 0.0;
 
    // Sum the contribution of errors at the node that are feedForward
    for (int i = 0; i < nextLayerNeurons.size(); i++) {
-      sum += outputWeights[i].weight * nextLayerNeurons[i].gradient;
+      sum += outputWeights[i].weight * nextLayerNeurons[i]->gradient;
    }
    // Sum up ghosh neuron errors
    for (int i = 0; i < nextLayerNeurons.size(); i++) {
-      sum += ghostNeuronTop->getOutputWeights()[i].weight * nextLayerNeurons[i].gradient;
-      sum += ghostNeuronBottom->getOutputWeights()[i].weight * nextLayerNeurons[i].gradient;
+      sum += ghostNeuronTop->getOutputWeights()[i].weight * nextLayerNeurons[i]->gradient;
+      sum += ghostNeuronBottom->getOutputWeights()[i].weight * nextLayerNeurons[i]->gradient;
    }
 
    return sum;
 }
 
-void Neuron::calcHiddenGradients(vector<Neuron> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
+void Neuron::calcHiddenGradients(vector<Neuron*> &nextLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
    double dow = sumDOW(nextLayerNeurons, ghostNeuronTop, ghostNeuronBottom);
    // cout << dow << endl;
    gradient = dow * sigmoidDerivative(output);
-   // cout << gradient << endl;
+   // if (myRank == 1)
+   //    cout << gradient << endl;
 }
 
-void Neuron::updateWeights(vector<Neuron> &prevLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom) {
+void Neuron::updateWeights(vector<Neuron*> &prevLayerNeurons, Neuron *ghostNeuronTop, Neuron *ghostNeuronBottom, int layerNum) {
    for (int i = 0; i < prevLayerNeurons.size(); i++) {
-      Neuron &neuron = prevLayerNeurons[i];
-      double oldDeltaWeight = neuron.outputWeights[index].deltaWeight;
-      double newDeltaWeight = eta * neuron.getOutput() * gradient + oldDeltaWeight;
+      Neuron *neuron = prevLayerNeurons[i];
+      double oldDeltaWeight = neuron->outputWeights[index].deltaWeight;
+      double newDeltaWeight = eta * neuron->getOutput() * gradient + oldDeltaWeight;
+      //
+      // if (layerNum == 1) {
+      //    // printf("oldDeltaWeight %f, newDeltaWeight %f\n", oldDeltaWeight, newDeltaWeight);
+      // }
+      // printf("old %f new %f\n", oldDeltaWeight, newDeltaWeight);
+      neuron->setOutputDeltaWeightForIndex(index, newDeltaWeight);
 
-      // printf("oldDeltaWeight %f, newDeltaWeight %f\n", oldDeltaWeight, newDeltaWeight);
+      double oldW = neuron->outputWeights[index].weight;
+      double newW = oldW + newDeltaWeight;
+      // printf("old %f, new %f\n", oldW, newW);
 
-      neuron.outputWeights[index].deltaWeight = newDeltaWeight;
-      neuron.outputWeights[index].weight += newDeltaWeight;
+      neuron->setOutputWeightForIndex(index, newW);
+
+      double current = neuron->getOutputWeights()[index].weight;
+      // cout << current << endl;
+      // neuron.outputWeights[index].deltaWeight = newDeltaWeight;
+      // neuron.outputWeights[index].weight += newDeltaWeight;
+
    }
 
 }

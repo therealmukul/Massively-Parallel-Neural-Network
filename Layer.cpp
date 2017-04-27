@@ -9,22 +9,21 @@ private:
    int index;
    int size;
    string type;
-   vector<Neuron> neurons;
-
+   vector<Neuron*> neurons;
    void performGhostNeuronMsgPassing();
 public:
    Neuron *ghostNeuronTop;
    Neuron *ghostNeuronBottom;
+
    Layer(const int &_size, const int &numNeuronsInNextLayer, const string &_type, const int &_index);
    void setOutputValueForNeuronAtIndex(int index, double _outputValue);
    string getType();
    int getSize();
    int getIndex();
-   vector<Neuron> getNeurons();
-   vector<Neuron>* getNeuronsReference();
-   void feedForward(Layer &prevLayer);
-   void calcHiddenGradients(Layer &nextLayer);
-   void updateWeights(Layer &prevLayer);
+   vector<Neuron*> getNeurons();
+   void feedForward(Layer *prevLayer);
+   void calcHiddenGradients(Layer *nextLayer);
+   void updateWeights(Layer *prevLayer, int layerNum);
    void setNeuronGradientForNeuronAtIndex(int index, double gradient);
 };
 
@@ -50,10 +49,10 @@ Layer::Layer(const int &_size, const int &numNeuronsInNextLayer, const string &_
    for (int neuronIndex = 0; neuronIndex < size; neuronIndex++) {
       if (type == "output") {
          // Output neurons have no outgoing connections
-         Neuron neuron = Neuron(0, (neuronIndex));
+         Neuron *neuron = new Neuron(0, (neuronIndex));
          neurons.push_back(neuron);
       } else {
-         Neuron neuron = Neuron(numNeuronsInNextLayer, (neuronIndex));
+         Neuron *neuron = new Neuron(numNeuronsInNextLayer, (neuronIndex));
          neurons.push_back(neuron);
       }
 
@@ -81,24 +80,20 @@ int Layer::getIndex() {
    return index;
 }
 
-vector<Neuron> Layer::getNeurons() {
+vector<Neuron*> Layer::getNeurons() {
    return neurons;
-}
-
-vector<Neuron>* Layer::getNeuronsReference() {
-   return &neurons;
 }
 
 
 void Layer::setOutputValueForNeuronAtIndex(int index, double _outputValue) {
-   neurons[index].setOutput(_outputValue);
+   neurons[index]->setOutput(_outputValue);
 }
 
 void Layer::performGhostNeuronMsgPassing() {
    double ghostTopOutput;
    double ghostBottomOutput;
-   double firstNeuronOutput = neurons[0].getOutput();
-   double lastNeuronOutput = neurons[neurons.size() - 1].getOutput();
+   double firstNeuronOutput = neurons[0]->getOutput();
+   double lastNeuronOutput = neurons[neurons.size() - 1]->getOutput();
 
    MPI_Status status;
    MPI_Request rcvTopRequest;
@@ -202,31 +197,31 @@ void Layer::performGhostNeuronMsgPassing() {
    }
 }
 
-void Layer::feedForward(Layer &prevLayer) {
+void Layer::feedForward(Layer *prevLayer) {
    // cout << "GhostTopOutput " << ghostNeuronTop->getOutput() << endl;
    // cout << "GhostBottomOutput " << ghostNeuronBottom->getOutput() << endl;
-   vector<Neuron> prevLayerNeurons = prevLayer.getNeurons();
-      for (int neuron = 0; neuron < neurons.size(); neuron++) {
-      neurons[neuron].feedForward(prevLayerNeurons, index, prevLayer.ghostNeuronTop, prevLayer.ghostNeuronBottom);
+   vector<Neuron*> prevLayerNeurons = prevLayer->getNeurons();
+   for (int neuron = 0; neuron < neurons.size(); neuron++) {
+      neurons[neuron]->feedForward(prevLayerNeurons, index, prevLayer->ghostNeuronTop, prevLayer->ghostNeuronBottom);
    }
 
    performGhostNeuronMsgPassing();
 }
 
-void Layer::calcHiddenGradients(Layer &nextLayer) {
-   vector<Neuron> nextLayerNeurons = nextLayer.getNeurons();
+void Layer::calcHiddenGradients(Layer *nextLayer) {
+   vector<Neuron*> nextLayerNeurons = nextLayer->getNeurons();
    for (int i = 0; i < neurons.size(); i++) {
-      neurons[i].calcHiddenGradients(nextLayerNeurons, ghostNeuronTop, ghostNeuronBottom);
+      neurons[i]->calcHiddenGradients(nextLayerNeurons, ghostNeuronTop, ghostNeuronBottom);
    }
 }
 
 void Layer::setNeuronGradientForNeuronAtIndex(int index, double gradient) {
-   neurons[index].setGradient(gradient);
+   neurons[index]->setGradient(gradient);
 }
 
-void Layer::updateWeights(Layer &prevLayer) {
-   vector<Neuron> prevLayerNeurons = prevLayer.getNeurons();
+void Layer::updateWeights(Layer *prevLayer, int layerNum) {
+   vector<Neuron*> prevLayerNeurons = prevLayer->getNeurons();
    for (int i = 0; i < neurons.size(); i++) {
-      neurons[i].updateWeights(prevLayerNeurons, ghostNeuronTop, ghostNeuronBottom);
+      neurons[i]->updateWeights(prevLayerNeurons, ghostNeuronTop, ghostNeuronBottom, layerNum);
    }
 }

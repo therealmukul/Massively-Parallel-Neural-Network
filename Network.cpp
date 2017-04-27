@@ -12,7 +12,7 @@ struct LayerTopology {
 class Network {
 private:
    int sampleIndex;
-   vector<Layer> layers;
+   vector<Layer*> layers;
    vector<LayerTopology> networkTopology;
    vector<vector<double> > inputData;
    vector<vector<double> > outputData;
@@ -29,7 +29,10 @@ public:
    void backwardPropagation();
    double computeLoss(int size);
 
-   void printNetworkInfo();  // For debugging purposes
+   // For debugging purposes
+   void printNetworkInfo();
+   void printLayerWeights(int layerIndex);
+   void testUpdate();
 };
 
 // Private Methods
@@ -70,10 +73,10 @@ void Network::initializeNetwork(int size) {
 
       if (currentLayer <= networkTopology.size() - 1) {
          int numNeuronsInNextLayer = networkTopology[currentLayer + 1].size;
-         Layer newLayer = Layer(layerSize, numNeuronsInNextLayer, layerType, layerIndex);
+         Layer *newLayer = new Layer(layerSize, numNeuronsInNextLayer, layerType, layerIndex);
          layers.push_back(newLayer);
       } else {
-         Layer newLayer = Layer(layerSize, 0, layerType, layerIndex);
+         Layer *newLayer = new Layer(layerSize, 0, layerType, layerIndex);
          layers.push_back(newLayer);
       }
    }
@@ -169,14 +172,14 @@ void Network::forwardPropagation() {
       // Feed the sample input values into the neurons in the input layer
       int inputLayerIndex = 0;
       for (int value = 0; value < inputSample.size(); value++) {
-         layers[inputLayerIndex].setOutputValueForNeuronAtIndex(value, inputSample[value]);
+         layers[inputLayerIndex]->setOutputValueForNeuronAtIndex(value, inputSample[value]);
       }
 
       // Forward Propogate
       for (int layerNum = 1; layerNum < layers.size(); layerNum++) {
          // cout << layers[layerNum].getType() << " Rank " << myRank << endl;
-         Layer prevLayer = layers[layerNum - 1];
-         layers[layerNum].feedForward(prevLayer);
+         Layer *prevLayer = layers[layerNum - 1];
+         layers[layerNum]->feedForward(prevLayer);
          // MPI_Barrier(MPI_COMM_WORLD);
       }
 
@@ -200,22 +203,22 @@ void Network::backwardPropagation() {
       int neuronIndex = 0;
       for (int i = offset; i < (offset + numOutputs); i++) {
          double gradient = outputGradients[i];
-         layers.back().setNeuronGradientForNeuronAtIndex(neuronIndex, gradient);
+         layers.back()->setNeuronGradientForNeuronAtIndex(neuronIndex, gradient);
          neuronIndex++;
       }
 
       // Calculate and assign gradients on hidden layers
       for (int layerNum = layers.size() - 2; layerNum > 0; layerNum--) {
-         Layer &hiddenLayer = layers[layerNum];
-         Layer &nextLayer = layers[layerNum + 1];
-         hiddenLayer.calcHiddenGradients(nextLayer);
+         Layer *hiddenLayer = layers[layerNum];
+         Layer *nextLayer = layers[layerNum + 1];
+         hiddenLayer->calcHiddenGradients(nextLayer);
       }
 
       // Updated the weights
       for (int layerNum = layers.size() - 1; layerNum > 0; layerNum--) {
-         Layer &currentLayer = layers[layerNum];
-         Layer &prevLayer = layers[layerNum - 1];
-         currentLayer.updateWeights(prevLayer);
+         Layer *currentLayer = layers[layerNum];
+         Layer *prevLayer = layers[layerNum - 1];
+         currentLayer->updateWeights(prevLayer, layerNum);
       }
 
    }
@@ -232,11 +235,11 @@ double Network::computeLoss(int size) {
          yHat.push_back(globalData[i]);
       }
 
-      printf("Rank %d has data: ", myRank);
-      for (int i = 0; i < yHat.size(); i++) {
-         cout << yHat[i] << " ";
-      }
-      cout << endl;
+      // printf("Rank %d has data: ", myRank);
+      // for (int i = 0; i < yHat.size(); i++) {
+      //    cout << yHat[i] << " ";
+      // }
+      // cout << endl;
 
       yHat = multiclassSigmoid(yHat);
       vector<double> yPred = outputData[sampleIndex - 1];
@@ -266,9 +269,30 @@ void Network::printNetworkInfo() {
    cout << "Num Rank: " << worldSize << endl;
    cout << "Each rank other than master handles:" << endl;
    for (int i = 0; i < layers.size(); i++) {
-      string layerType = layers[i].getType();
-      int layerSize = layers[i].getSize();
+      string layerType = layers[i]->getType();
+      int layerSize = layers[i]->getSize();
       printf("  Type: %s Size: %d\n", layerType.c_str(), layerSize);
    }
    cout << "----------------------" << endl;
+}
+
+void Network::printLayerWeights(int layerIndex) {
+   vector<Neuron*> neurons = layers[layerIndex]->getNeurons();
+   for (int i = 0; i < neurons.size(); i++) {
+      double w1 = neurons[i]->getOutputWeights()[0].weight;
+      double dw1 = neurons[i]->getOutputWeights()[0].deltaWeight;
+      double w2 = neurons[i]->getOutputWeights()[1].weight;
+      double dw2 = neurons[i]->getOutputWeights()[1].deltaWeight;
+      printf("Rank: %d Neuron: %d w1: %.2f, dw1: %.2f, w2: %.2f, dw2: %.2f\n", myRank, i, w1, dw1, w2, dw2);
+   }
+}
+
+void Network::testUpdate() {
+   Layer *inputLayer = layers[0];
+   cout << inputLayer->getNeurons().size() << endl;
+   vector<Neuron*> neurons = inputLayer->getNeurons();
+   cout << neurons[0]->getOutputWeights()[0].weight << endl;
+   double w = neurons[0]->getOutputWeights()[0].weight + 1;
+   neurons[0]->setOutputWeightForIndex(0, w);
+   cout << neurons[0]->getOutputWeights()[0].weight << endl;
 }
