@@ -13,7 +13,8 @@ int worldSize;
 int myRank;
 
 double *globalData = NULL;
-double localData[2];
+// double localData[5]; // numOutputs / worldSize - 1
+double *localData = NULL;
 int outputsPerRank;
 
 #include "Neuron.cpp"
@@ -32,9 +33,9 @@ int main(int argc, char *argv[]) {
    MPI_Comm_size( MPI_COMM_WORLD, &worldSize);
    MPI_Comm_rank( MPI_COMM_WORLD, &myRank);
 
-   int numInputs = 3;
-   int numHidden = 4;
-   int numOutputs = 4;
+   int numInputs = 100;
+   int numHidden = 400;
+   int numOutputs = 100;
 
    // Check that the number of ranks does not exceed the maximum allowed
    if(myRank == 0){
@@ -55,8 +56,8 @@ int main(int argc, char *argv[]) {
    net.initializeNetwork(size);
 
 
-   net.loadTestingInputData("testInput.txt");
-   net.loadTestingOutputData("testLabels.txt", 4);
+   net.loadTestingInputData("genTestInput.txt");
+   net.loadTestingOutputData("genTestLabels.txt", numOutputs);
 
 
    // Rank 0 is the master rank
@@ -65,13 +66,13 @@ int main(int argc, char *argv[]) {
 
    }
 
-   int iterations = 200;
+   int iterations = 20;
    // Perform forward propogation for the specified number of iterations
    for (int i = 0; i < iterations; i++) {
       net.forwardPropagation();
-      // if (myRank == 1) {
-      //    net.testUpdate();
-      // }
+      if (myRank == 1) {
+         // cout << i << endl;
+      }
 
       // net.testUpdate();
       double loss = net.computeLoss(size);

@@ -95,7 +95,8 @@ void Neuron::updateInputWeights(vector<Neuron> &prev_layer) {
 void Neuron::feedForward(const vector<Neuron> &prev_layer) {
    double sum = 0.0;
    for (int i = 0; i < prev_layer.size(); i++) {
-      sum += prev_layer[i].getOutputValue() * prev_layer[i].output_weights[my_index].weight;
+      cout << i << endl;
+      sum += prev_layer[i].getOutputValue();
    }
 
    // Transfer Function
@@ -144,7 +145,9 @@ void Net::feedForward(const vector<double> &input_Values) {
    // Forward propogate
    for (int layer_num = 1; layer_num < layers.size(); layer_num++) {
       vector<Neuron> &prev_layer = layers[layer_num - 1];
+      cout << "layer num " << layer_num << endl;
       for (int n = 0; n < layers[layer_num].size(); n++) {
+         cout << n << endl;
          layers[layer_num][n].feedForward(prev_layer);
       }
    }
@@ -153,10 +156,11 @@ void Net::feedForward(const vector<double> &input_Values) {
 
 void Net::backProp(const vector<double> &target_Values) {
    // Calculate overall net error
+
    vector<Neuron> &output_layer = layers.back();
-   error = 0.0;
 
    for (int i = 0; i < output_layer.size(); i++) {
+
       double delta = target_Values[i] - output_layer[i].getOutputValue();
       error += delta * delta;
    }
@@ -209,10 +213,30 @@ int main() {
    Net myNet(topology);
 
    vector<double> input_Values;
+   input_Values.push_back(0.0);
+   input_Values.push_back(1.0);
+   input_Values.push_back(0.0);
+
    vector<double> target_Values;
+   target_Values.push_back(0.0);
+
+   vector<double> input_Values2;
+   input_Values2.push_back(0.0);
+   input_Values2.push_back(1.0);
+   input_Values2.push_back(1.0);
+
+   vector<double> target_Values2;
+   target_Values2.push_back(1.0);
+
+
+
+
    vector<double> resultValues;
 
    myNet.feedForward(input_Values);
    myNet.backProp(target_Values);
-   myNet.getResults(resultValues);
+
+   myNet.feedForward(input_Values2);
+   // myNet.backProp(target_Values2);
+   // myNet.getResults(resultValues);
 }

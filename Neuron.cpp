@@ -58,7 +58,7 @@ double Neuron::sigmoidDerivative(double x) {
 */
 Neuron::Neuron(int numOutputs, int _index) {
    output = 0.0;  // Default neuron value is set to 0.0
-   eta = 0.01;
+   eta = 0.001;
    for (int connection = 0; connection < numOutputs; connection++) {
       Connection c = Connection();
       c.weight = 0.1; // Change this to be a random value
@@ -132,9 +132,9 @@ void Neuron::feedForward(vector<Neuron*> &prevLayerNeurons, int layerIndex, Neur
 
    // Store in local data so that MPI_Allgather() can access it
    // TODO: Change this so that the last layer is not hard coded to 2
-   if (layerIndex == 2) {
-      localData[index] = output;
-   }
+   // if (layerIndex == 2) {
+   //    localData[index] = output;
+   // }
 
 }
 

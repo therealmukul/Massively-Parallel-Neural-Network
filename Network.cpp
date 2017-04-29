@@ -236,36 +236,39 @@ double Network::computeLoss(int size) {
    int outputsPerRank = networkTopology.back().size;
    int ret = MPI_Allgather(&localData, outputsPerRank, MPI_DOUBLE, globalData, outputsPerRank, MPI_DOUBLE, MPI_COMM_WORLD);
    double loss = 0;
-   if (ret == MPI_SUCCESS) {
-      vector<double> yHat;
-      for (int i = outputsPerRank; i < (outputsPerRank * (worldSize)); i++) {
-         yHat.push_back(globalData[i]);
-      }
 
-      // printf("Rank %d has data: ", myRank);
-      // for (int i = 0; i < yHat.size(); i++) {
-      //    cout << yHat[i] << " ";
-      // }
-      // cout << endl;
-
-      yHat = multiclassSigmoid(yHat);
-      vector<double> yPred = outputData[sampleIndex - 1];
-      vector<double> yGradient;
-
-      for (int i = 0; i < yHat.size(); i++) {
-         double gradVal = -1 * (yPred[i] - yHat[i]);
-         yGradient.push_back(gradVal);
-      }
-
-      outputGradients = yGradient;
-      targetOutput = yPred;
-
-      for (int i = 0; i < yGradient.size(); i++) {
-         loss += yGradient[i] * yGradient[i];
-      }
-      loss = loss / 2;
-      // backwardPropagation();
+   for (int i = 0; i < (outputsPerRank * (worldSize - 1)); i++) {
+      outputGradients.push_back(0.0);
    }
+   // if (ret == MPI_SUCCESS) {
+   //    vector<double> yHat;
+   //    for (int i = outputsPerRank; i < (outputsPerRank * (worldSize)); i++) {
+   //       yHat.push_back(globalData[i]);
+   //    }
+   //
+   //    // printf("Rank %d has data: ", myRank);
+   //    // for (int i = 0; i < yHat.size(); i++) {
+   //    //    cout << yHat[i] << " ";
+   //    // }
+   //    // cout << endl;
+   //    //
+   //    yHat = multiclassSigmoid(yHat);
+   //    vector<double> yPred = outputData[sampleIndex - 1];
+   //    vector<double> yGradient;
+   //
+   //    for (int i = 0; i < yHat.size(); i++) {
+   //       double gradVal = -1 * (yPred[i] - yHat[i]);
+   //       yGradient.push_back(gradVal);
+   //    }
+   //
+   //    outputGradients = yGradient;
+   //    targetOutput = yPred;
+   //
+   //    for (int i = 0; i < yGradient.size(); i++) {
+   //       loss += yGradient[i] * yGradient[i];
+   //    }
+   //    loss = loss / 2;
+   // }
 
    return loss;
 }
