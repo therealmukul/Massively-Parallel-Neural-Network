@@ -1,14 +1,7 @@
 # Massively Parallel Artificial Neural Network
 
-### --Under Development--
+This is an implementation of DNN capable of performing multinomial classifications.
+The network was tested on AMOS. Rensselaer Polytechnic Institute's Blue Gene/Q architecture based supercomputer.
 
-- [X] Network Initialization
-- [X] Input data preprocessing
-- [X] Implement Forward Propagation
-- [X] Parallelize Forward Propagation
-- [X] Implement Backward Propagation
-- [X] Parallelize Backward Propagation
-- [ ] Perform Strong Scaling Tests
-
-
-![alt text](nnmeme.jpg)
+Does it work? Yes-ish. There still a lot of work to be done. 
+Initital results are discussed in [this paper](https://www.dropbox.com/s/a7djrwximezc952/massively-parallel-deep%20%283%29.pdf?dl=0)

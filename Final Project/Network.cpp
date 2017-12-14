@@ -210,7 +210,7 @@ void Network::backwardPropagation() {
 
 double Network::computeLoss(int size) {
    int outputsPerRank = networkTopology.back().size;
-   int ret = MPI_Allgather(&localData, outputsPerRank, MPI_DOUBLE, globalData, outputsPerRank, MPI_DOUBLE, MPI_COMM_WORLD);
+   int ret = MPI_Allgather(localData, outputsPerRank, MPI_DOUBLE, globalData, outputsPerRank, MPI_DOUBLE, MPI_COMM_WORLD);
    double loss = 0;
 
 
